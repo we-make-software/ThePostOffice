@@ -32,7 +32,7 @@ stop:
 commit:
 	git add .
 	git commit -m "$(COMMIT_MSG)"
-	git push origin main
+	git push --force origin main
 
 pull:
 	git pull origin main --rebase
