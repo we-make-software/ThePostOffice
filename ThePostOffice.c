@@ -11,10 +11,31 @@ struct NetworkAdapterTable {
     struct list_head routers,list;
 };
 struct RouterTable{
+    u8 MediaAccessControl[6];
     struct ExpiryWorkBase expiryWorkBase;
     struct NetworkAdapterTable*networkAdapterTable;
     struct list_head list;
 };
+bool ThePostOfficeSend(struct NetworkAdapterTable* nat,struct RouterTable*rt,u16 size,u8*data){
+    if(size<14||!nat||nat->expiryWorkBase.Invalid)return false;
+    struct sk_buff *skb;
+    skb=netdev_alloc_skb(nat->dev,size+NET_IP_ALIGN);
+    if(!skb)return false;
+    skb_reserve(skb,NET_IP_ALIGN);
+    skb_put_data(skb,data,size); 
+    skb_put_data(skb,data,6);
+    skb_put_data(skb,nat->dev->dev_addr,6);
+    skb_put_data(skb,data+6,size-6); 
+    skb->dev=nat->dev;
+    skb->protocol=htons(ETH_P_IP);
+    skb->priority=0;
+    if(dev_queue_xmit(skb)<0){
+        kfree_skb(skb);
+        return false;
+    }
+    return true;
+}
+
 static DEFINE_MUTEX(NetworkAdapterListMutex);
 static LIST_HEAD(NetworkAdapterList);
 static struct NetworkAdapterTable*GetNetworkAdapter(struct net_device*dev);
