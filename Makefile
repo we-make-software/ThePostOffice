@@ -1,14 +1,13 @@
-# Kernel version
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
-# Automatically generate the commit message based on the date
+EXTRA_CFLAGS += -I../TheMailConditioner -I../ExpiryWorkBase
+KBUILD_EXTRA_SYMBOLS := ../TheMailConditioner/Module.symvers ../ExpiryWorkBase/Module.symvers
+
 COMMIT_MSG = Update on $(shell date '+%Y-%m-%d %H:%M:%S')
 
-# Module name
 obj-m := ThePostOffice.o
 
-# Build rules
 all:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
@@ -31,7 +30,9 @@ stop:
 	make clear
 
 commit:
-
 	git add .
 	git commit -m "$(COMMIT_MSG)"
 	git push origin main
+
+pull:
+	git pull origin main --rebase
