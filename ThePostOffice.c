@@ -43,7 +43,6 @@ static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev){
 	if(!adapter)return NULL;
 	adapter->dev=dev;
 	INIT_LIST_HEAD(&adapter->list);
-    INIT_LIST_HEAD(&adapter->routers);
 	SetupExpiryWorkBase(&adapter->expiryWorkBase,NULL,adapter,AutoDeleteNetworkAdapter);
 	mutex_lock(&NetworkAdapterListMutex);
 	list_add(&adapter->list,&NetworkAdapterList);
@@ -130,3 +129,9 @@ Setup("ThePostOffice",
     UnbindNetworkAdapterToTheProject();
     CancelAllNetworkAdapters();
     )
+
+
+
+
+
+
