@@ -15,8 +15,8 @@ struct RouterTable{
     SetupEWB;
     struct NetworkAdapterTable*nat;
     struct list_head list;
-    u8 Used[sizeof(struct list_head)];
 };
+/*
 bool ThePostOfficeSend(struct RouterTable*rt,u16 size,u8*data){
     if(size<14||!rt||rt->ewb.Invalid)return false;
     struct sk_buff *skb;
@@ -35,7 +35,7 @@ bool ThePostOfficeSend(struct RouterTable*rt,u16 size,u8*data){
     }
     return true;
 }
-
+*/
 static DEFINE_MUTEX(NATMutex);
 static LIST_HEAD(NATList);
 static struct NetworkAdapterTable*GetNetworkAdapter(struct net_device*dev);
@@ -50,25 +50,25 @@ static struct NetworkAdapterTable*GetNetworkAdapter(struct net_device*dev){
 }
 static void AutoDeleteNetworkAdapter(void*adapter){
 	struct NetworkAdapterTable*nat=(struct NetworkAdapterTable*)adapter;
-	mutex_lock(&NATList);
+	mutex_lock(&NATMutex);
 	struct RouterTable*router,*tmp;
 	list_for_each_entry_safe(router,tmp,&nat->routers,list)
         CancelExpiryWorkBase(&router->ewb);
-	mutex_unlock(&NATList);
+	mutex_unlock(&NATMutex);
 }
 static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev);
 static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev){
     struct NetworkAdapterTable*nat=GetNetworkAdapter(dev);
     if(nat)return nat;
-    mutex_lock(&NATList);
+    mutex_lock(&NATMutex);
     nat=GetNetworkAdapter(dev);
     if(nat){
-        mutex_unlock(&NATList);
+        mutex_unlock(&NATMutex);
         return nat;
     }
 	nat=kmalloc(sizeof(struct NetworkAdapterTable),GFP_KERNEL);
 	if(!nat){
-        mutex_unlock(&NATList);
+        mutex_unlock(&NATMutex);
         return NULL;
     }
 	nat->dev=dev;
@@ -76,7 +76,7 @@ static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev){
     INIT_LIST_HEAD(&nat->routers);
 	SetupExpiryWorkBase(&nat->ewb,NULL,nat,AutoDeleteNetworkAdapter);
 	list_add(&nat->list,&NATList);
-	mutex_unlock(&NATList);
+	mutex_unlock(&NATMutex);
 	return nat;
 }
 struct PacketConversion{
@@ -137,8 +137,7 @@ static int ThePostOfficeReceivePacket(struct sk_buff*skb,struct net_device*dev,s
 	pc->IsTransmissionControlProtocol=IsTransmissionControlProtocol;
 	pc->IsVersion6=IsVersion6;
 	pc->skb=skb;
-    data+=6;
-    pc->data=data;
+    pc->data=data+6;
 	pc->dev=dev;
 	INIT_WORK(&pc->work,PacketWorkHandler);
 	queue_work(system_bh_highpri_wq ,&pc->work);
