@@ -6,9 +6,9 @@
 #include <linux/tcp.h>
 #include <linux/ipv6.h>
 struct NetworkAdapterTable {
+    SetupEWB;
     struct list_head routers,list;
     struct net_device*dev;
-    SetupEWB;
 };
 struct RouterTable{
     u8 MediaAccessControl[6];
@@ -73,12 +73,15 @@ static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev){
     }
 	nat->dev=dev;
 	INIT_LIST_HEAD(&nat->list);
+    INIT_LIST_HEAD(&nat->routers);
 	SetupExpiryWorkBase(&nat->ewb,NULL,nat,AutoDeleteNetworkAdapter);
 	list_add(&nat->list,&NATList);
 	mutex_unlock(&NATList);
 	return nat;
 }
 struct PacketConversion{
+    u8 reverse[2*sizeof(void*)]; 
+    u8*data;
     u16 SourcePort;
     bool IsTransmissionControlProtocol;
     bool IsVersion6;
@@ -134,6 +137,8 @@ static int ThePostOfficeReceivePacket(struct sk_buff*skb,struct net_device*dev,s
 	pc->IsTransmissionControlProtocol=IsTransmissionControlProtocol;
 	pc->IsVersion6=IsVersion6;
 	pc->skb=skb;
+    data+=6;
+    pc->data=data;
 	pc->dev=dev;
 	INIT_WORK(&pc->work,PacketWorkHandler);
 	queue_work(system_bh_highpri_wq ,&pc->work);
