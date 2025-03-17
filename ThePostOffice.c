@@ -11,11 +11,11 @@ struct NetworkAdapterTable {
     SetupEWB;
 };
 struct RouterTable{
-    u8 Used[sizeof(struct list_head)];
     u8 MediaAccessControl[6];
     SetupEWB;
     struct NetworkAdapterTable*nat;
     struct list_head list;
+    u8 Used[sizeof(struct list_head)];
 };
 bool ThePostOfficeSend(struct RouterTable*rt,u16 size,u8*data){
     if(size<14||!rt||rt->ewb.Invalid)return false;
@@ -36,39 +36,47 @@ bool ThePostOfficeSend(struct RouterTable*rt,u16 size,u8*data){
     return true;
 }
 
-static DEFINE_MUTEX(NetworkAdapterListMutex);
-static LIST_HEAD(NetworkAdapterList);
+static DEFINE_MUTEX(NATMutex);
+static LIST_HEAD(NATList);
 static struct NetworkAdapterTable*GetNetworkAdapter(struct net_device*dev);
 static struct NetworkAdapterTable*GetNetworkAdapter(struct net_device*dev){
-    struct NetworkAdapterTable*adapter;
-    mutex_lock(&NetworkAdapterListMutex);
-    list_for_each_entry(adapter,&NetworkAdapterList,list)
-        if(adapter->dev==dev){
-            mutex_unlock(&NetworkAdapterListMutex);
-            return adapter;
-        }
-    mutex_unlock(&NetworkAdapterListMutex);
+    struct NetworkAdapterTable*nat;
+    if(list_empty(&NATList))return NULL;
+    list_for_each_entry(nat,&NATList,list)
+    if(nat->dev==dev){
+        return nat;
+    }
     return NULL;
 }
 static void AutoDeleteNetworkAdapter(void*adapter){
-	struct NetworkAdapterTable*net_adapter=(struct NetworkAdapterTable*)adapter;
-	mutex_lock(&NetworkAdapterListMutex);
+	struct NetworkAdapterTable*nat=(struct NetworkAdapterTable*)adapter;
+	mutex_lock(&NATList);
 	struct RouterTable*router,*tmp;
-	list_for_each_entry_safe(router,tmp,&net_adapter->routers,list)
+	list_for_each_entry_safe(router,tmp,&nat->routers,list)
         CancelExpiryWorkBase(&router->ewb);
-	mutex_unlock(&NetworkAdapterListMutex);
+	mutex_unlock(&NATList);
 }
 static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev);
 static struct NetworkAdapterTable*AddNetworkAdapter(struct net_device*dev){
-	struct NetworkAdapterTable*adapter=kmalloc(sizeof(struct NetworkAdapterTable),GFP_KERNEL);
-	if(!adapter)return NULL;
-	adapter->dev=dev;
-	INIT_LIST_HEAD(&adapter->list);
-	SetupExpiryWorkBase(&adapter->ewb,NULL,adapter,AutoDeleteNetworkAdapter);
-	mutex_lock(&NetworkAdapterListMutex);
-	list_add(&adapter->list,&NetworkAdapterList);
-	mutex_unlock(&NetworkAdapterListMutex);
-	return adapter;
+    struct NetworkAdapterTable*nat=GetNetworkAdapter(dev);
+    if(nat)return nat;
+    mutex_lock(&NATList);
+    nat=GetNetworkAdapter(dev);
+    if(nat){
+        mutex_unlock(&NATList);
+        return nat;
+    }
+	nat=kmalloc(sizeof(struct NetworkAdapterTable),GFP_KERNEL);
+	if(!nat){
+        mutex_unlock(&NATList);
+        return NULL;
+    }
+	nat->dev=dev;
+	INIT_LIST_HEAD(&nat->list);
+	SetupExpiryWorkBase(&nat->ewb,NULL,nat,AutoDeleteNetworkAdapter);
+	list_add(&nat->list,&NATList);
+	mutex_unlock(&NATList);
+	return nat;
 }
 struct PacketConversion{
     u16 SourcePort;
@@ -79,10 +87,10 @@ struct PacketConversion{
     struct work_struct work;
 };
 extern void TheMailConditionerPacketWorkHandler(struct NetworkAdapterTable*,struct PacketConversion*);
-static void PacketConversionTask(struct PacketConversion*packet_work){
-    struct NetworkAdapterTable*adapter=GetNetworkAdapter(packet_work->dev)?:AddNetworkAdapter(packet_work->dev);
-    if(!adapter||adapter->ewb.Invalid)return;
-    TheMailConditionerPacketWorkHandler(adapter,packet_work);
+static void PacketConversionTask(struct PacketConversion*pw){
+    struct NetworkAdapterTable*nat=AddNetworkAdapter(pw->dev);
+    if(!nat||nat->ewb.Invalid)return;
+    TheMailConditionerPacketWorkHandler(nat,pw);
 }
 static void PacketWorkHandler(struct work_struct *work) {
     struct PacketConversion *packet_work = container_of(work, struct PacketConversion, work);
@@ -132,9 +140,9 @@ static int ThePostOfficeReceivePacket(struct sk_buff*skb,struct net_device*dev,s
 	return 1;
 }
 static void CancelAllNetworkAdapters(void){
-    struct NetworkAdapterTable*adapter, *tmp;
-    list_for_each_entry_safe(adapter, tmp, &NetworkAdapterList, list)
-        CancelExpiryWorkBase(&adapter->ewb);
+    struct NetworkAdapterTable*nat, *tmp;
+    list_for_each_entry_safe(nat, tmp, &NATList, list)
+        CancelExpiryWorkBase(&nat->ewb);
 }
 static struct packet_type ThePostOfficePacketType;
 static void BindNetworkAdapterToTheProject(void){
