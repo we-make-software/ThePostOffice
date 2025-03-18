@@ -89,11 +89,11 @@ struct PacketConversion{
     struct net_device *dev;
     struct work_struct work;
 };
-extern void TheMailConditionerPacketWorkHandler(struct NetworkAdapterTable*,struct PacketConversion*);
+///extern void TheMailConditionerPacketWorkHandler(struct NetworkAdapterTable*,struct PacketConversion*);
 static void PacketConversionTask(struct PacketConversion*pw){
     struct NetworkAdapterTable*nat=AddNetworkAdapter(pw->dev);
     if(!nat||nat->ewb.Invalid)return;
-    TheMailConditionerPacketWorkHandler(nat,pw);
+   // TheMailConditionerPacketWorkHandler(nat,pw);
 }
 static void PacketWorkHandler(struct work_struct *work) {
     struct PacketConversion *packet_work = container_of(work, struct PacketConversion, work);

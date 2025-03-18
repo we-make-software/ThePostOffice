@@ -1,8 +1,8 @@
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
-EXTRA_CFLAGS += -I../TheMailConditioner -I../ExpiryWorkBase
-KBUILD_EXTRA_SYMBOLS := ../TheMailConditioner/Module.symvers ../ExpiryWorkBase/Module.symvers
+EXTRA_CFLAGS += -I../ExpiryWorkBase
+KBUILD_EXTRA_SYMBOLS := ../ExpiryWorkBase/Module.symvers
 
 COMMIT_MSG = Update on $(shell date '+%Y-%m-%d %H:%M:%S')
 
