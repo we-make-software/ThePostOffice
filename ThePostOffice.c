@@ -1,53 +1,24 @@
 #include "../TheMailConditioner/TheMailConditioner.h"
-static void Layer1End(void){
-    printk(KERN_INFO "TheMailConditioner: Layer 1 shutdown complete.\n");
+bool IsNetworkVersion4Used(u8*value);
+bool IsNetworkVersion4Used(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3]},4,false)!=NULL;
 }
-static void Layer0Start(void){
-  
-    ktime_t start, end;
-    u8*testvalue=kmalloc(4,GFP_KERNEL);
-    if(!testvalue){
-        printk(KERN_INFO "TheMailConditioner: Layer 0 startup failed.\n");
-        return;
-    }
-    testvalue[0]=1;
-    testvalue[1]=2;
-    testvalue[2]=240;
-    testvalue[3]=255;
-
-    start = ktime_get();  // Start timing
-    struct TheMailConditioner*Test1=GetTheMailConditioner(testvalue,4,true); 
-    end = ktime_get();  // End timing
-
-    if(!Test1){
-        printk(KERN_INFO "TheMailConditioner: Layer 0 startup failed.\n");
-        return;
-    }
-
-    printk(KERN_INFO "TheMailConditioner: First call took %llu ns, returned pointer: %p\n", 
-           ktime_to_ns(ktime_sub(end, start)), Test1);
-
-    start = ktime_get();
-    struct TheMailConditioner*Test2=GetTheMailConditioner(testvalue,4,true); 
-    end = ktime_get();
-
-    printk(KERN_INFO "TheMailConditioner: Second call took %llu ns, returned pointer: %p\n", 
-           ktime_to_ns(ktime_sub(end, start)), Test2);
-
-    if(!Test2){
-        printk(KERN_INFO "1:TheMailConditioner: Layer 0 startup failed.\n");
-        return;
-    }
-
-    if (Test1 == Test2)
-        printk(KERN_INFO "TheMailConditioner: The same object was returned.\n");
-    else
-        printk(KERN_INFO "TheMailConditioner: A new object was created.\n");
-
-    kfree(testvalue);
-
-    printk(KERN_INFO "TheMailConditioner: Layer 0 startup initialized test 1.\n");
+EXPORT_SYMBOL(IsNetworkVersion4Used);
+struct TheMailConditioner*GetNetworkVersion4(u8*value);
+struct TheMailConditioner*GetNetworkVersion4(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3]},4,true);
 }
-
-
+EXPORT_SYMBOL(GetNetworkVersion4);
+bool IsNetworkVersion6Used(u8*value);
+bool IsNetworkVersion6Used(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]},16,false)!=NULL;
+}
+EXPORT_SYMBOL(IsNetworkVersion6Used);
+struct TheMailConditioner*GetNetworkVersion6(u8*value);
+struct TheMailConditioner*GetNetworkVersion6(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]},16,true);
+}
+EXPORT_SYMBOL(GetNetworkVersion6);
+static void Layer1End(void){}
+static void Layer0Start(void){}
 Layer0_1Setup("ThePostOffice",0,0)
