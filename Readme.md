@@ -11,3 +11,10 @@
     </td>
   </tr>
 </table>
+
+## License
+This project is licensed under the **Do What The F*ck You Want To Public License (WTFPL)**.  
+See the [LICENSE](LICENSE) file for details.
+
+## **Made by**  
+**Pirasath Luxchumykanthan**  
