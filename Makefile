@@ -1,8 +1,8 @@
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
-EXTRA_CFLAGS += -I../ExpiryWorkBase -I../TheMailConditioner
-KBUILD_EXTRA_SYMBOLS := ../ExpiryWorkBase/Module.symvers ../TheMailConditioner/Module.symvers
+EXTRA_CFLAGS += -I../ExpiryWorkBase -I../TheMailConditioner -I../TheMaintainer
+KBUILD_EXTRA_SYMBOLS := ../ExpiryWorkBase/Module.symvers ../TheMailConditioner/Module.symvers ../TheMaintainer/Module.symvers
 
 
 COMMIT_MSG = Update on $(shell date '+%Y-%m-%d %H:%M:%S')
@@ -41,3 +41,4 @@ commit:
 
 pull:
 	git pull origin main --rebase
+
