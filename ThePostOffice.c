@@ -1,4 +1,4 @@
-#include "../TheMailConditioner/TheMailConditioner.h"
+#include "../TheMaintainer/TheMaintainer.h"
 bool IsNetworkVersion4Used(u8*value);
 bool IsNetworkVersion4Used(u8*value){
     return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3]},4,false)!=NULL;
@@ -19,6 +19,16 @@ struct TheMailConditioner*GetNetworkVersion6(u8*value){
     return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]},16,true);
 }
 EXPORT_SYMBOL(GetNetworkVersion6);
+bool IsMediaAccessControlUsed(u8*value);
+bool IsMediaAccessControlUsed(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3],value[4],value[5]},6,false)!=NULL;
+}
+EXPORT_SYMBOL(IsMediaAccessControlUsed);
+struct TheMailConditioner*GetMediaAccessControl(u8*value);
+struct TheMailConditioner*GetMediaAccessControl(u8*value){
+    return GetTheMailConditioner((u8[]){value[0],value[1],value[2],value[3],value[4],value[5]},6,true);
+}
+EXPORT_SYMBOL(GetMediaAccessControl);
 static void Layer1End(void){}
 static void Layer0Start(void){}
 Layer0_1Setup("ThePostOffice",0,0)
