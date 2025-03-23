@@ -4,5 +4,5 @@ static void TMStart(void){
   
 }
 static void TMEnd(void){
-  
+  StopExpiryWorkBase();
 }
