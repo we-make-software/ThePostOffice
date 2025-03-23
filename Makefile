@@ -13,7 +13,7 @@ start:
 	sudo insmod ThePostOffice.ko
 stop:
 	sudo rmmod ThePostOffice.ko
-	make clear
+	make clean
 commit:
 	@if ! git diff-index --quiet HEAD; then \
 		git add . && \
