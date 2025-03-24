@@ -1,8 +1,10 @@
-#ifndef ThePostOffice_H
-#define ThePostOffice_H
+#ifndef TheNetworkAdapter_H
+#define TheNetworkAdapter_H
 #include "../TheMaintainer/TheMaintainer.h"
+
 struct ThePostOffice{
-    u8 test;
+    SetupEWB;
 };
-#define GetThePostOfficeTM()TM(ThePostOffice,0,0,0,255,255,255,255,255,255,255,255,255,255,255,255,255,255)
+#define GetThePostOfficeTM()TM(ThePostOffice,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255)
+#define GetThePostOfficeTMFailback(failback)TMFailback(ThePostOffice,failback,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255)
 #endif
