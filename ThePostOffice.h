@@ -1,7 +1,6 @@
-#ifndef TheNetworkAdapter_H
-#define TheNetworkAdapter_H
+#ifndef ThePostOffice_H
+#define ThePostOffice_H
 #include "../TheMaintainer/TheMaintainer.h"
-
 struct ThePostOffice{
     SetupEWB;
 };
