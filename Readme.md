@@ -15,7 +15,7 @@
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
-      <strong>Role:</strong> Role: TheRouter
+      <strong>Role:</strong> TheRouter
     </td>
   </tr>
   <tr style="border: none;">
