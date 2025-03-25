@@ -1,5 +1,6 @@
+#include "../TheRouter/TheRouter.h"make
 #include "ThePostOffice.h"
-#include "../TheRouter/TheRouter.h"
+
 #include <linux/netdevice.h>
 SetupTM(ThePostOffice,0,0,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255)
 struct ReviewPacketData{
@@ -14,8 +15,8 @@ struct ReviewPacketData{
 static void SlowReviewPacket(struct work_struct *work) {
     struct ReviewPacketData*rpd=container_of(work,struct ReviewPacketData, work);
     if(!rpd)return;
-    GetRouterTM();
-    TheRouterTM->SlowReviewPacket(rpd);
+    GetTheRouterTM();
+    TheRouterTM->ReviewPacket(rpd);
     kfree_skb(rpd->skb);
     kfree(rpd); 
 }
@@ -70,5 +71,4 @@ static void TMStart(void){
 static void TMEnd(void*data){
     TMKeepAliveEnd();
     dev_remove_pack(&PacketType);
-    kfree(data);
 }
